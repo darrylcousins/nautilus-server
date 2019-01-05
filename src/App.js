@@ -2,11 +2,14 @@
  * @file Provides the `App`
  * @author Darryl Cousins <darryljcousins@gmail.com>
  */
+// **NB** fix import statements - see client
 const Express = require("express")
 const Couchbase = require("couchbase")
 const ExpressGraphQL = require("express-graphql")
 const BuildSchema = require("graphql").buildSchema
 const UUID = require("uuid")
+const cors = require("cors")
+const moment = require("moment")
 
 var cluster = new Couchbase.Cluster("couchbase://localhost")
 cluster.authenticate("administrator", "car3tak3")
@@ -26,6 +29,8 @@ var schema = BuildSchema(`
     firstname: String
     lastname: String
     email: String
+    ctime: String!
+    mtime: String!
   }
   type GlossaryEntry {
     id: String
@@ -33,6 +38,8 @@ var schema = BuildSchema(`
     title: String
     byline: String
     content: String
+    ctime: String!
+    mtime: String!
   }
   type DiaryEntry {
     id: String
@@ -41,6 +48,8 @@ var schema = BuildSchema(`
     title: String
     byline: String
     content: String
+    ctime: String!
+    mtime: String!
   }
   type Mutation {
     createAccount(
@@ -155,12 +164,19 @@ var resolvers = {
 
 var App = Express()
 
+var opts = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+App.use(cors(opts))
+App.disable("x-powered-by")
+
 App.use("/graphql", ExpressGraphQL({
       schema: schema,
       rootValue: resolvers,
       graphiql: true
 }))
 
-App.listen(3000, () => {
-  console.log("Listening at http://localhost:3000/")
+App.listen(4000, () => {
+  console.log("Listening at http://localhost:4000/")
 })

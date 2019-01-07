@@ -56,13 +56,32 @@ var schema = BuildSchema(`
       firstname: String!
       lastname: String!
       email: String!): Account
+    updateAccount(
+      firstname: String!
+      lastname: String!
+      email: String!): Account
     createGlossaryEntry(
       account: String!
       title: String!
       byline: String
       content: String!): GlossaryEntry
+    updateGlossaryEntry(
+      account: String!
+      id: String!
+      type: String!
+      title: String!
+      byline: String
+      content: String!): GlossaryEntry
     createDiaryEntry(
       account: String!
+      date: String!
+      title: String!
+      byline: String
+      content: String!): DiaryEntry
+    updateDiaryEntry(
+      account: String!
+      id: String!
+      type: String!
       date: String!
       title: String!
       byline: String
@@ -136,7 +155,7 @@ var resolvers = {
     return new Promise((resolve, reject) => {
       bucket.insert(id, data, (error, result) => {
         if(error) return reject(error)
-        resolve({"id": id})
+        resolve(data)
       })
     })
   },
@@ -146,7 +165,15 @@ var resolvers = {
     return new Promise((resolve, reject) => {
       bucket.insert(id, data, (error, result) => {
         if(error) return reject(error)
-        resolve({"id": id})
+        resolve(data)
+      })
+    })
+  },
+  updateGlossaryEntry: (data) => {
+    return new Promise((resolve, reject) => {
+      bucket.replace(data.id, data, (error, result) => {
+        if(error) return reject(error)
+        resolve(data)
       })
     })
   },
@@ -156,7 +183,15 @@ var resolvers = {
     return new Promise((resolve, reject) => {
       bucket.insert(id, data, (error, result) => {
         if(error) return reject(error)
-        resolve({"id": id})
+        resolve(data)
+      })
+    })
+  },
+  updateDiaryEntry: (data) => {
+    return new Promise((resolve, reject) => {
+      bucket.replace(data.id, data, (error, result) => {
+        if(error) return reject(error)
+        resolve(data)
       })
     })
   }

@@ -1,6 +1,6 @@
 # nautilus-server
 
-Graphql server with Couchbase database for nautilus-client application.
+Express Graphql server with Couchbase database for nautilus-client application.
 
 # Getting Started
 
@@ -14,9 +14,9 @@ There is some information about installing Couchbase with Docker in `docs/instal
 
 Start server:
 
-    node App.js
-    Listening at http://localhost:3000/
+    node src/App.js
+    Listening at http://localhost:4000/
 
 Access graphql sandbox on:
 
-   http://localhost:3000/graphql
+   http://localhost:4000/graphql

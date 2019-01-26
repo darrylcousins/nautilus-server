@@ -72,20 +72,13 @@ var schema = BuildSchema(`
       title: String!
       byline: String
       content: String!): GlossaryEntry
-    createDiaryEntry(
-      account: String!
-      date: String!
-      title: String!
-      byline: String
-      content: String!): DiaryEntry
-    updateDiaryEntry(
+    deleteGlossaryEntry(
       account: String!
       id: String!
       type: String!
-      date: String!
       title: String!
       byline: String
-      content: String!): DiaryEntry
+      content: String!): GlossaryEntry
   }
 `)
 
@@ -101,7 +94,8 @@ var resolvers = {
     })
   },
   accounts: () => {
-    var statement = "SELECT META(account).id, account.* FROM `" + bucket._name + "` AS account WHERE account.type = 'account'"
+    var statement = "SELECT META(account).id, account.* FROM `" +
+      bucket._name + "` AS account WHERE account.type = 'account'"
     var query = Couchbase.N1qlQuery.fromString(statement)
     return new Promise((resolve, reject) => {
       bucket.query(query, (error, result) => {
@@ -120,26 +114,10 @@ var resolvers = {
     })
   },
   glossaryentries: () => {
-    var statement = "SELECT META(entry).id, entry.* FROM `" + bucket._name + "` AS entry WHERE entry.type = 'glossaryentry'"
-    var query = Couchbase.N1qlQuery.fromString(statement)
-    return new Promise((resolve, reject) => {
-      bucket.query(query, (error, result) => {
-        if(error) return reject(error)
-        resolve(result)
-      })
-    })
-  },
-  diaryentry: (data) => {
-    var id = data.id
-    return new Promise((resolve, reject) => {
-      bucket.get(id, (error, result) => {
-        if(error) return reject(error)
-        resolve(result.value)
-      })
-    })
-  },
-  diaryentries: () => {
-    var statement = "SELECT META(entry).id, entry.* FROM `" + bucket._name + "` AS entry WHERE entry.type = 'diaryentry'"
+    var statement = "SELECT META(entry).id, entry.* FROM `" +
+      bucket._name +
+      "` AS entry WHERE entry.type = 'glossaryentry'" +
+      " ORDER BY entry.title ASC"
     var query = Couchbase.N1qlQuery.fromString(statement)
     return new Promise((resolve, reject) => {
       bucket.query(query, (error, result) => {
@@ -165,32 +143,28 @@ var resolvers = {
     return new Promise((resolve, reject) => {
       bucket.insert(id, data, (error, result) => {
         if(error) return reject(error)
+        data.id = id
         resolve(data)
       })
     })
   },
   updateGlossaryEntry: (data) => {
+    var id = data.id
+    delete data.id
     return new Promise((resolve, reject) => {
-      bucket.replace(data.id, data, (error, result) => {
+      bucket.replace(id, data, (error, result) => {
         if(error) return reject(error)
+        data.id = id
         resolve(data)
       })
     })
   },
-  createDiaryEntry: (data) => {
-    var id = UUID.v4()
-    data.type = "diaryentry"
+  deleteGlossaryEntry: (data) => {
+    var id = data.id
     return new Promise((resolve, reject) => {
-      bucket.insert(id, data, (error, result) => {
+      bucket.remove(id, (error, result) => {
         if(error) return reject(error)
-        resolve(data)
-      })
-    })
-  },
-  updateDiaryEntry: (data) => {
-    return new Promise((resolve, reject) => {
-      bucket.replace(data.id, data, (error, result) => {
-        if(error) return reject(error)
+        data.id = id
         resolve(data)
       })
     })

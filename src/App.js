@@ -20,9 +20,7 @@ var schema = BuildSchema(`
     account(id: String!): Account
     accounts: [Account]
     glossaryentry(id: String!): GlossaryEntry
-    glossaryentries(account: String!): [GlossaryEntry]
-    diaryentry(id: String!): DiaryEntry
-    diaryentries(account: String!): [DiaryEntry]
+    glossaryentries(account: String!, searchTerm: String): [GlossaryEntry]
   }
   type Account {
     id: String
@@ -35,16 +33,6 @@ var schema = BuildSchema(`
   type GlossaryEntry {
     id: String
     account: String!
-    title: String
-    byline: String
-    content: String
-    ctime: String!
-    mtime: String!
-  }
-  type DiaryEntry {
-    id: String
-    account: String!
-    date: String
     title: String
     byline: String
     content: String
@@ -113,11 +101,16 @@ var resolvers = {
       })
     })
   },
-  glossaryentries: () => {
+  glossaryentries: (data) => {
     var statement = "SELECT META(entry).id, entry.* FROM `" +
       bucket._name +
       "` AS entry WHERE entry.type = 'glossaryentry'" +
-      " ORDER BY entry.title ASC"
+      " AND entry.account = '" +
+      data.account + "'"
+    if (data.searchTerm) {
+      statement += " AND CONTAINS(LOWER(entry.title), '" + data.searchTerm.toLowerCase() + "')"
+    }
+    statement += " ORDER BY entry.title ASC"
     var query = Couchbase.N1qlQuery.fromString(statement)
     return new Promise((resolve, reject) => {
       bucket.query(query, (error, result) => {

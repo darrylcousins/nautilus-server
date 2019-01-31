@@ -2,18 +2,17 @@
  * @file Provides the `App`
  * @author Darryl Cousins <darryljcousins@gmail.com>
  */
-// **NB** fix import statements - see client
-const Express = require("express")
-const Couchbase = require("couchbase")
-const ExpressGraphQL = require("express-graphql")
-const BuildSchema = require("graphql").buildSchema
-const UUID = require("uuid")
-const cors = require("cors")
-const moment = require("moment")
+import Express from 'express'
+import { BuildSchema } from 'graphql'
+import Couchbase from 'couchbase'
+import ExpressGraphQL from 'express-graphql'
+import UUID from 'uuid'
+import cors from 'cors'
+import moment from 'moment'
 
-var cluster = new Couchbase.Cluster("couchbase://localhost")
+var cluster = new Couchbase.Cluster(process.env.COUCHBASE_HOST || config.couchbase.server)
 cluster.authenticate("administrator", "car3tak3")
-var bucket = cluster.openBucket("sandbox")
+var bucket = cluster.openBucket(process.env.COUCHBASE_BUCKET || config.couchbase.bucket)
 
 var schema = BuildSchema(`
   type Query {
